@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PetCorner Pro | Supabase</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --p: #FF8C42;
+            --p-grad: linear-gradient(135deg, #FF8C42 0%, #FFB281 100%);
+            --bg: #F8F9FA;
+            --w: #FFFFFF;
+            --txt: #2D3436;
+            --m: #A0AEC0;
+            --shadow: 0 10px 25px rgba(255, 140, 66, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--bg); color: var(--txt); overflow-x: hidden; }
+
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--w); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .paw-anim { font-size: 80px; color: var(--p); animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        .app { width: 100%; max-width: 480px; min-height: 100vh; margin: 0 auto; background: var(--bg); position: relative; padding-bottom: 90px; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+
+        .header { background: var(--w); padding: 20px 20px 15px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .tabs { display: flex; background: #f1f1f1; padding: 4px; border-radius: 15px; margin-top: 15px; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-weight: 700; cursor: pointer; border-radius: 12px; color: var(--m); transition: 0.3s; }
+        .tab.active { background: var(--w); color: var(--p); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        /* Chips */
+        .chips { display: flex; gap: 10px; overflow-x: auto; padding: 15px 20px 5px; scrollbar-width: none; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { padding: 8px 18px; background: var(--w); border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--m); white-space: nowrap; cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
+        .chip.active { background: var(--p); color: white; border-color: var(--p); }
+
+        .page { display: none; padding: 10px 20px; }
+        .page.active { display: block; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: var(--w); border-radius: 24px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; position: relative; border: 1px solid rgba(0,0,0,0.02); }
+        .card:active { transform: scale(0.96); }
+        .card-img { height: 120px; background: #FFF9F5; display: flex; align-items: center; justify-content: center; font-size: 45px; }
+        .card-body { padding: 12px; }
+        .card-price { color: var(--p); font-weight: 800; font-size: 16px; margin-top: 4px; }
+
+        /* Skeleton */
+        .skeleton { background: #eee; background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); border-radius: 24px; height: 180px; background-size: 200% 100%; animation: 1.5s shine linear infinite; }
+        @keyframes shine { to { background-position-x: -200%; } }
+
+        .profile-header { background: var(--p-grad); border-radius: 30px; padding: 30px 20px; color: white; text-align: center; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .profile-avatar { width: 80px; height: 80px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; color: var(--p); font-weight: 800; border: 4px solid rgba(255,255,255,0.3); }
+        .profile-stats { display: flex; justify-content: space-around; margin-top: 20px; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 15px; }
+        .stat-box b { display: block; font-size: 18px; }
+        .stat-box span { font-size: 11px; opacity: 0.8; text-transform: uppercase; }
+        
+        .menu-list { background: white; border-radius: 25px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .menu-item { padding: 18px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #f8f9fa; cursor: pointer; transition: 0.2s; }
+        .menu-item:active { background: #f9f9f9; }
+        .menu-item i { color: var(--p); width: 20px; text-align: center; }
+
+        .nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: rgba(255,255,255,0.95); display: flex; justify-content: space-around; padding: 15px 0 30px; border-top: 1px solid #eee; z-index: 1000; backdrop-filter: blur(10px); }
+        .nav-item { color: #cbd5e0; font-size: 24px; cursor: pointer; }
+        .nav-item.active { color: var(--p); }
+        .nav-add { background: var(--p-grad); color: white !important; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -40px; border: 5px solid var(--bg); box-shadow: var(--shadow); }
+
+        .input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 15px; border: 1px solid #eee; background: #f9f9f9; font-size: 15px; outline: none; transition: 0.3s; }
+        .input:focus { border-color: var(--p); background: var(--w); }
+        .btn { padding: 16px; border-radius: 15px; border: none; font-weight: 700; width: 100%; cursor: pointer; background: var(--p-grad); color: white; box-shadow: var(--shadow); }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: flex-end; }
+        .modal-content { background: var(--w); width: 100%; max-width: 480px; border-radius: 35px 35px 0 0; padding: 30px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen">
+    <div class="paw-anim"><i class="fa-solid fa-paw"></i></div>
+    <p style="margin-top: 15px; font-weight: 800; color: var(--p); letter-spacing: 3px; font-size: 12px;">PETCORNER</p>
+</div>
+
+<div class="app">
+    <header id="mainHeader" class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="font-weight: 800; color: var(--p); font-size: 24px;">🐾 PetCorner</h1>
+            <a href="https://t.me/mcz_dyxyz" target="_blank"><i class="fa-solid fa-headset" style="color: var(--m); font-size: 20px;"></i></a>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="setTab('dating', this)">Знайомства</div>
+            <div class="tab" onclick="setTab('bazar', this)">Базар</div>
+        </div>
+    </header>
+
+    <div id="filterSection" class="chips">
+        <div class="chip active" onclick="setFilter('all', this)">Всі</div>
+        <div class="chip" onclick="setFilter('🐶', this)">Собаки</div>
+        <div class="chip" onclick="setFilter('🐱', this)">Коти</div>
+        <div class="chip" onclick="setFilter('🦜', this)">Птахи</div>
+        <div class="chip" onclick="setFilter('📦', this)">Інше</div>
+    </div>
+
+    <main>
+        <div id="homePage" class="page active"><div id="mainGrid" class="grid"></div></div>
+        <div id="profilePage" class="page"><div id="authArea"></div></div>
+    </main>
+
+    <nav class="nav">
+        <div class="nav-item active" onclick="nav('home', this)"><i class="fa-solid fa-house"></i></div>
+        <div class="nav-item nav-add" onclick="openAdd()"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-item" onclick="nav('profile', this)"><i class="fa-solid fa-user"></i></div>
+    </nav>
+</div>
+
+<div id="addModal" class="modal" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 20px; font-weight: 800;">Нове оголошення</h3>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <select id="aIcon" class="input" style="width:80px; margin-bottom:0">
+                <option value="🐶">🐶</option>
+                <option value="🐱">🐱</option>
+                <option value="🦜">🦜</option>
+                <option value="🐰">🐰</option>
+                <option value="📦">📦</option>
+            </select>
+            <select id="aType" class="input" style="margin-bottom:0" onchange="document.getElementById('pWrap').style.display=this.value==='bazar'?'block':'none'">
+                <option value="dating">Знайомства</option>
+                <option value="bazar">Базар (Продаж)</option>
+            </select>
+        </div>
+        <input type="text" id="aTitle" class="input" placeholder="Заголовок (напр. Грайливий коргі)">
+        <div id="pWrap" style="display:none"><input type="number" id="aPrice" class="input" placeholder="Ціна (грн)"></div>
+        <textarea id="aDesc" class="input" placeholder="Опис..." style="height:100px"></textarea>
+        <input type="text" id="aTg" class="input" placeholder="Telegram нік (без @)">
+        <button class="btn" id="btnPublish" onclick="publish()">Опублікувати</button>
+    </div>
+</div>
+
+<script>
+    // --- SUPABASE CONFIG ---
+    const S_URL = 'https://phdprsqaqnkzjzfmgzxb.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZHByc3FhcW5remp6Zm1nenhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMTE2MTYsImV4cCI6MjA4Nzg4NzYxNn0.p0yQktJkgJH9wDWU_tlEyHvbL5x-LyPCtGt0w68x9no';
+    const _sb = supabase.createClient(S_URL, S_KEY);
+
+    let user = JSON.parse(localStorage.getItem('pet_user')) || null;
+    let currentTab = 'dating';
+    let currentFilter = 'all';
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+        }, 1200);
+    });
+
+    async function loadPosts() {
+        const grid = document.getElementById('mainGrid');
+        grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
+        
+        let query = _sb.from('posts').select('*').eq('type', currentTab).order('created_at', { ascending: false });
+        
+        if(currentFilter !== 'all') {
+            query = query.eq('icon', currentFilter);
+        }
+
+        const { data, error } = await query;
+
+        if (error) return console.error(error);
+        
+        grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--m);">Нікого не знайдено 🐾</p>';
+        data.forEach(p => {
+            grid.innerHTML += `
+                <div class="card animate__animated animate__zoomIn" onclick="window.open('https://t.me/${p.tg_username}')">
+                    <div class="card-img">${p.icon || '🐾'}</div>
+                    <div class="card-body">
+                        <div style="font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.title}</div>
+                        <div class="card-price">${p.price > 0 ? p.price + ' ₴' : 'Dating'}</div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function publish() {
+        const btn = document.getElementById('btnPublish');
+        const title = document.getElementById('aTitle').value.trim();
+        const tg = document.getElementById('aTg').value.trim().replace('@', '');
+        
+        if(!title || !tg) return alert('Введіть назву та Telegram!');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Завантаження...';
+
+        const post = {
+            type: document.getElementById('aType').value,
+            title: title,
+            description: document.getElementById('aDesc').value,
+            price: parseInt(document.getElementById('aPrice').value) || 0,
+            tg_username: tg,
+            icon: document.getElementById('aIcon').value,
+            author_id: user.id
+        };
+
+        const { error } = await _sb.from('posts').insert([post]);
+        
+        btn.disabled = false;
+        btn.innerText = 'Опублікувати';
+
+        if(error) alert('Помилка! Перевір базу.');
+        else {
+            document.getElementById('addModal').style.display = 'none';
+            loadPosts();
+        }
+    }
+
+    function renderProfile() {
+        const area = document.getElementById('authArea');
+        if(!user) {
+            area.innerHTML = `
+                <div style="text-align:center; padding: 40px 0;">
+                    <div style="font-size: 60px; color: #f1f1f1; margin-bottom: 20px;"><i class="fa-solid fa-user-lock"></i></div>
+                    <h2 style="margin-bottom:10px;">Твій профіль</h2>
+                    <p style="color:var(--m); margin-bottom:30px; font-size: 14px;">Увійдіть, щоб публікувати оголошення</p>
+                    <input id="uName" class="input" placeholder="Нікнейм">
+                    <button class="btn" onclick="register()">Вхiд</button>
+                </div>`;
+        } else {
+            area.innerHTML = `
+                <div class="profile-header animate__animated animate__fadeIn">
+                    <div class="profile-avatar">${user.name[0]}</div>
+                    <h2 style="font-weight:800;">${user.name}</h2>
+                    <p style="font-size: 11px; opacity: 0.7; letter-spacing:1px;">PET-ID: ${user.id.substring(0,8).toUpperCase()}</p>
+                    <div class="profile-stats">
+                        <div class="stat-box"><b>LIVE</b><span>Статус</span></div>
+                        <div class="stat-box"><b>UA</b><span>Регіон</span></div>
+                        <div class="stat-box"><b>Standart</b><span>План</span></div>
+                    </div>
+                </div>
+                <div class="menu-list">
+                    <div class="menu-item"><i class="fa-solid fa-headset"></i> <a href="https://t.me/mcz_dyxyz" target="_blank" style="color: inherit; text-decoration: none;">Служба підтримки</a> </div>
+                    <div class="menu-item" style="color: #ff4757" onclick="logout()"><i class="fa-solid fa-power-off"></i> Вийти</div>
+                </div>`;
+        }
+    }
+
+    function register() {
+        const n = document.getElementById('uName').value;
+        if(n.length < 2) return alert('Ім\'я занадто коротке!');
+        user = { name: n, id: 'u_' + Math.random().toString(36).substr(2, 9) };
+        localStorage.setItem('pet_user', JSON.stringify(user));
+        renderProfile();
+    }
+
+    function logout() { if(confirm('Вийти з профілю?')) { user = null; localStorage.removeItem('pet_user'); renderProfile(); } }
+
+    function setTab(t, el) {
+        currentTab = t;
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        loadPosts();
+    }
+
+    function setFilter(f, el) {
+        currentFilter = f;
+        document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        loadPosts();
+    }
+
+    function nav(p, el) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById(p + 'Page').classList.add('active');
+        el.classList.add('active');
+        document.getElementById('mainHeader').style.display = p === 'home' ? 'block' : 'none';
+        document.getElementById('filterSection').style.display = p === 'home' ? 'flex' : 'none';
+    }
+
+    function openAdd() {
+        if(!user) {
+            alert('Спершу створіть профіль!');
+            nav('profile', document.querySelectorAll('.nav-item')[2]);
+        } else {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+    }
+
+    renderProfile();
+    loadPosts();
+</script>
+</body>
+</html>
