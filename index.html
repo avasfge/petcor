@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PetCorner Pro | Supabase</title>
-    
+    <meta name="description" content="PetCorner — знайомства та базар для тварин. Знайди друга або продай/купи улюбленця.">
+    <meta name="theme-color" content="#FF8C42">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -19,10 +26,16 @@
             --txt: #2D3436;
             --m: #A0AEC0;
             --shadow: 0 10px 25px rgba(255, 140, 66, 0.15);
+            --radius: 24px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: 'Montserrat', sans-serif; }
-        body { background: var(--bg); color: var(--txt); overflow-x: hidden; }
+        body { background: var(--bg); color: var(--txt); overflow-x: hidden; min-height: 100vh; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
 
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -36,21 +49,25 @@
 
         .header { background: var(--w); padding: 20px 20px 15px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .tabs { display: flex; background: #f1f1f1; padding: 4px; border-radius: 15px; margin-top: 15px; }
-        .tab { flex: 1; padding: 12px; text-align: center; font-weight: 700; cursor: pointer; border-radius: 12px; color: var(--m); transition: 0.3s; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-weight: 700; cursor: pointer; border-radius: 12px; color: var(--m); transition: var(--transition); }
         .tab.active { background: var(--w); color: var(--p); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tab:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
 
         /* Chips */
         .chips { display: flex; gap: 10px; overflow-x: auto; padding: 15px 20px 5px; scrollbar-width: none; }
         .chips::-webkit-scrollbar { display: none; }
-        .chip { padding: 8px 18px; background: var(--w); border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--m); white-space: nowrap; cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
+        .chip { padding: 8px 18px; background: var(--w); border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--m); white-space: nowrap; cursor: pointer; border: 1px solid #eee; transition: var(--transition); }
         .chip.active { background: var(--p); color: white; border-color: var(--p); }
+        .chip:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
 
         .page { display: none; padding: 10px 20px; }
         .page.active { display: block; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: var(--w); border-radius: 24px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; position: relative; border: 1px solid rgba(0,0,0,0.02); }
+        .card { background: var(--w); border-radius: var(--radius); overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.03); cursor: pointer; transition: transform var(--transition), box-shadow var(--transition); position: relative; border: 1px solid rgba(0,0,0,0.02); }
+        .card:hover { box-shadow: 0 12px 28px rgba(255, 140, 66, 0.12); transform: translateY(-2px); }
         .card:active { transform: scale(0.96); }
+        .card:focus-visible { outline: 2px solid var(--p); outline-offset: 4px; }
         .card-img { height: 120px; background: #FFF9F5; display: flex; align-items: center; justify-content: center; font-size: 45px; }
         .card-body { padding: 12px; }
         .card-price { color: var(--p); font-weight: 800; font-size: 16px; margin-top: 4px; }
@@ -71,61 +88,211 @@
         .menu-item i { color: var(--p); width: 20px; text-align: center; }
 
         .nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: rgba(255,255,255,0.95); display: flex; justify-content: space-around; padding: 15px 0 30px; border-top: 1px solid #eee; z-index: 1000; backdrop-filter: blur(10px); }
-        .nav-item { color: #cbd5e0; font-size: 24px; cursor: pointer; }
+        .nav-item { color: #cbd5e0; font-size: 24px; cursor: pointer; transition: color var(--transition); }
         .nav-item.active { color: var(--p); }
-        .nav-add { background: var(--p-grad); color: white !important; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -40px; border: 5px solid var(--bg); box-shadow: var(--shadow); }
+        .nav-item:focus-visible { outline: 2px solid var(--p); outline-offset: 4px; border-radius: 8px; }
+        .nav-add { background: var(--p-grad); color: white !important; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -40px; border: 5px solid var(--bg); box-shadow: var(--shadow); transition: transform var(--transition); }
+        .nav-add:hover { transform: scale(1.08); }
+        .nav-add:focus-visible { outline: 2px solid var(--txt); outline-offset: 4px; }
 
         .input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 15px; border: 1px solid #eee; background: #f9f9f9; font-size: 15px; outline: none; transition: 0.3s; }
         .input:focus { border-color: var(--p); background: var(--w); }
-        .btn { padding: 16px; border-radius: 15px; border: none; font-weight: 700; width: 100%; cursor: pointer; background: var(--p-grad); color: white; box-shadow: var(--shadow); }
+        .input:focus-visible { outline: none; border-color: var(--p); box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.2); }
+        .btn { padding: 16px; border-radius: 15px; border: none; font-weight: 700; width: 100%; cursor: pointer; background: var(--p-grad); color: white; box-shadow: var(--shadow); transition: var(--transition); }
+        .btn:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn:active:not(:disabled) { transform: translateY(0); }
+        .btn:focus-visible { outline: 2px solid var(--txt); outline-offset: 3px; }
+        .btn:disabled { opacity: 0.8; cursor: not-allowed; }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: flex-end; }
-        .modal-content { background: var(--w); width: 100%; max-width: 480px; border-radius: 35px 35px 0 0; padding: 30px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: flex-end; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--w); width: 100%; max-width: 480px; margin: 0 auto; border-radius: 35px 35px 0 0; padding: 30px; animation: slideUp 0.3s ease-out; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0.9; } to { transform: translateY(0); opacity: 1; } }
+        .loading-screen-fade { transition: opacity 0.5s ease-out; }
+
+        /* Search, sort, toolbar */
+        .toolbar { padding: 10px 20px 5px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-wrap { flex: 1; min-width: 140px; }
+        .search-wrap .input { margin-bottom: 0; padding-left: 42px; }
+        .search-wrap { position: relative; }
+        .search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--m); font-size: 14px; pointer-events: none; }
+        .sort-select { padding: 10px 14px; border-radius: 12px; border: 1px solid #eee; background: var(--w); font-size: 13px; font-weight: 600; color: var(--txt); cursor: pointer; }
+        .btn-icon { width: 42px; height: 42px; border-radius: 12px; border: none; background: var(--w); color: var(--m); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: var(--transition); }
+        .btn-icon:hover { color: var(--p); background: #FFF9F5; }
+        .btn-icon:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
+
+        .card-seller { font-size: 11px; color: var(--m); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .card-city { font-size: 11px; color: var(--m); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .card-date { font-size: 10px; color: var(--m); margin-top: 2px; }
+        .detail-seller { background: #f8f9fa; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .detail-seller-name { font-weight: 700; font-size: 15px; color: var(--txt); }
+        body.dark .detail-seller { background: #1f2228; }
+        .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 2; }
+        .card-action-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.95); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--m); transition: var(--transition); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card-action-btn:hover { background: var(--w); color: var(--p); transform: scale(1.1); }
+        .card-action-btn.fav-active { color: #ff4757; }
+        .card-actions { opacity: 1; }
+        @media (min-width: 600px) { .card-actions { opacity: 0.85; } .card:hover .card-actions { opacity: 1; } }
+
+        body.dark { --bg: #1a1d23; --w: #252830; --txt: #e8eaed; --m: #8b9298; --shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        body.dark .header { background: var(--w); }
+        body.dark .tabs { background: #1f2228; }
+        body.dark .chip { background: var(--w); border-color: #333; color: var(--m); }
+        body.dark .card { background: var(--w); border-color: #333; }
+        body.dark .nav { background: rgba(37,40,48,0.98); border-color: #333; }
+        body.dark .input { background: #1f2228; border-color: #333; color: var(--txt); }
+        body.dark .menu-list { background: var(--w); }
+        body.dark .menu-item { border-color: #333; }
+        body.dark .skeleton { background: linear-gradient(110deg, #2a2d35 8%, #333 18%, #2a2d35 33%); }
+        body.dark .sort-select { background: var(--w); border-color: #333; color: var(--txt); }
+        body.dark .btn-text { color: var(--p); }
+        body.dark .toast { background: var(--txt); color: var(--bg); }
+
+        .list-count { padding: 8px 20px 4px; font-size: 12px; color: var(--m); }
+        .btn-text { background: none; border: none; color: var(--p); font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 10px; }
+        .btn-text:hover { text-decoration: underline; }
+        .grid.list-mode { grid-template-columns: 1fr; }
+        .grid.list-mode .card { display: flex; flex-direction: row; align-items: stretch; }
+        .grid.list-mode .card-img { width: 100px; min-width: 100px; height: auto; font-size: 36px; }
+        .grid.list-mode .card-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        #toastBox { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 90%; }
+        .toast { padding: 12px 20px; background: var(--txt); color: var(--w); border-radius: 14px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #detailModal .modal-content { max-height: 85vh; }
+        .detail-row { margin-bottom: 12px; font-size: 14px; }
+        .detail-row b { display: inline-block; min-width: 90px; color: var(--m); }
+        .detail-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .detail-actions .btn { width: auto; flex: 1; min-width: 140px; }
+        .badge-new { position: absolute; top: 6px; left: 6px; background: #00b894; color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 10px; z-index: 1; }
+        .auth-tabs { display: flex; margin-bottom: 20px; gap: 8px; }
+        .auth-tabs .chip { flex: 1; justify-content: center; margin-bottom: 0; }
+        .auth-form { max-width: 360px; margin: 0 auto; }
+        .auth-form .input { margin-bottom: 12px; }
+        .auth-form .btn { margin-top: 8px; }
+        .auth-link { font-size: 13px; color: var(--p); cursor: pointer; margin-top: 16px; display: inline-block; }
+        .auth-link:hover { text-decoration: underline; }
+        .auth-msg { font-size: 13px; color: var(--m); margin-top: 12px; min-height: 20px; }
+        .verified-badge { display: inline-flex; align-items: center; gap: 4px; background: #00b894; color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-left: 8px; }
+        .verified-badge i { font-size: 10px; }
+        .card-verified { position: absolute; top: 8px; left: 8px; z-index: 2; }
+        .member-since { font-size: 11px; opacity: 0.85; margin-top: 4px; }
+        .chat-item { background: var(--w); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); }
+        .chat-item:hover { background: #FFF9F5; }
+        .chat-item .name { font-weight: 700; font-size: 14px; }
+        .chat-item .meta { font-size: 12px; color: var(--m); margin-top: 2px; }
+        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; margin-bottom: 8px; font-size: 14px; }
+        .msg-bubble.me { background: var(--p-grad); color: white; margin-left: auto; }
+        .msg-bubble.other { background: #f0f0f0; color: var(--txt); }
+        .msg-bubble.system { background: #e8f4fd; color: #555; font-size: 12px; text-align: center; }
+        body.dark .msg-bubble.other { background: #333; }
+        body.dark .chat-item { background: var(--w); }
+        .admin-post-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--w); border-radius: 12px; margin-bottom: 8px; border: 1px solid #eee; }
+        .admin-post-row .title { font-weight: 700; font-size: 14px; }
+        .admin-post-row .btn { width: auto; padding: 8px 14px; font-size: 13px; margin: 0; }
     </style>
 </head>
 <body>
 
-<div id="loading-screen">
-    <div class="paw-anim"><i class="fa-solid fa-paw"></i></div>
+<div id="loading-screen" class="loading-screen-fade" role="status" aria-live="polite" aria-label="Завантаження">
+    <div class="paw-anim" aria-hidden="true"><i class="fa-solid fa-paw"></i></div>
     <p style="margin-top: 15px; font-weight: 800; color: var(--p); letter-spacing: 3px; font-size: 12px;">PETCORNER</p>
 </div>
 
-<div class="app">
-    <header id="mainHeader" class="header">
+<div class="app" role="application" aria-label="PetCorner додаток">
+    <header id="mainHeader" class="header" role="banner">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1 style="font-weight: 800; color: var(--p); font-size: 24px;">🐾 PetCorner</h1>
-            <a href="https://t.me/mcz_dyxyz" target="_blank"><i class="fa-solid fa-headset" style="color: var(--m); font-size: 20px;"></i></a>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn-icon" onclick="refreshPosts()" aria-label="Оновити" title="Оновити"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button type="button" class="btn-icon" onclick="toggleDark()" aria-label="Тема" title="Тема"><i class="fa-solid fa-moon" id="darkIcon"></i></button>
+                <a href="https://t.me/mcz_dyxyz" target="_blank" rel="noopener noreferrer" aria-label="Telegram підтримки"><i class="fa-solid fa-solid fa-headset" style="color: var(--m); font-size: 18px;"></i></a>
+            </div>
         </div>
-        <div class="tabs">
-            <div class="tab active" onclick="setTab('dating', this)">Знайомства</div>
-            <div class="tab" onclick="setTab('bazar', this)">Базар</div>
+        <div class="tabs" role="tablist" aria-label="Розділи">
+            <div class="tab active" role="tab" aria-selected="true" tabindex="0" onclick="setTab('dating', this)" onkeydown="if(event.key==='Enter'||event.key===' ') setTab('dating', this)">Знайомства</div>
+            <div class="tab" role="tab" aria-selected="false" tabindex="0" onclick="setTab('bazar', this)" onkeydown="if(event.key==='Enter'||event.key===' ') setTab('bazar', this)">Базар</div>
         </div>
     </header>
 
-    <div id="filterSection" class="chips">
-        <div class="chip active" onclick="setFilter('all', this)">Всі</div>
-        <div class="chip" onclick="setFilter('🐶', this)">Собаки</div>
-        <div class="chip" onclick="setFilter('🐱', this)">Коти</div>
-        <div class="chip" onclick="setFilter('🦜', this)">Птахи</div>
-        <div class="chip" onclick="setFilter('📦', this)">Інше</div>
+    <div class="toolbar">
+        <div class="search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="input" placeholder="Пошук..." aria-label="Пошук оголошень" oninput="applyFiltersAndRender()">
+        </div>
+        <select id="sortSelect" class="sort-select" aria-label="Сортування" onchange="applyFiltersAndRender()">
+            <option value="date">Нові спочатку</option>
+            <option value="price_asc">Ціна ↑</option>
+            <option value="price_desc">Ціна ↓</option>
+            <option value="title">За назвою</option>
+        </select>
+        <button type="button" class="btn-icon" onclick="toggleListView()" id="viewModeBtn" aria-label="Режим перегляду" title="Сітка / Список"><i class="fa-solid fa-grip"></i></button>
+        <button type="button" class="btn-text" onclick="resetAllFilters()" id="resetFiltersBtn">Скинути</button>
+    </div>
+    <div class="list-count" id="listCount" aria-live="polite"></div>
+
+    <div id="filterSection" class="chips" role="group" aria-label="Фільтр по типу тварин">
+        <div class="chip active" onclick="setFilter('all', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('all', this)">Всі</div>
+        <div class="chip" onclick="setFilter('🐶', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('🐶', this)">Собаки</div>
+        <div class="chip" onclick="setFilter('🐱', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('🐱', this)">Коти</div>
+        <div class="chip" onclick="setFilter('🦜', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('🦜', this)">Птахи</div>
+        <div class="chip" onclick="setFilter('📦', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('📦', this)">Інше</div>
+        <div class="chip" id="chipFav" onclick="setFilter('favorites', this)" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ') setFilter('favorites', this)">❤ Обране</div>
     </div>
 
-    <main>
-        <div id="homePage" class="page active"><div id="mainGrid" class="grid"></div></div>
-        <div id="profilePage" class="page"><div id="authArea"></div></div>
+    <div id="cityChips" class="chips" style="padding-top: 5px; padding-bottom: 10px;" role="group" aria-label="Фільтр по місту"></div>
+
+    <main role="main">
+        <div id="homePage" class="page active" role="tabpanel" aria-hidden="false"><div id="mainGrid" class="grid" aria-busy="false"></div></div>
+        <div id="chatsPage" class="page" role="tabpanel" aria-hidden="true" style="padding: 10px 20px;">
+            <div id="chatsListWrap"><p class="list-count">Мої чати</p><div id="chatsList"></div></div>
+            <div id="chatsAllWrap" style="display:none;"><p class="list-count">Усі чати (підтримка)</p><div id="chatsAllList"></div></div>
+        </div>
+        <div id="adminPage" class="page" role="tabpanel" aria-hidden="true" style="padding: 10px 20px;">
+            <div class="profile-header" style="padding: 20px;"><h2 style="margin:0 0 8px;">Адмін-панель</h2><p id="adminUserCount" style="margin:0; opacity:0.9;">Користувачів: —</p></div>
+            <h3 style="font-size:16px; margin:16px 0 8px;">Всі оголошення (видалення)</h3><div id="adminPostsList"></div>
+        </div>
+        <div id="profilePage" class="page" role="tabpanel" aria-hidden="true"><div id="authArea"></div></div>
     </main>
 
-    <nav class="nav">
-        <div class="nav-item active" onclick="nav('home', this)"><i class="fa-solid fa-house"></i></div>
-        <div class="nav-item nav-add" onclick="openAdd()"><i class="fa-solid fa-plus"></i></div>
-        <div class="nav-item" onclick="nav('profile', this)"><i class="fa-solid fa-user"></i></div>
+    <div id="toastBox"></div>
+
+    <div id="detailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle" aria-hidden="true" onclick="if(event.target===this) closeDetailModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="detailModalTitle" style="margin-bottom: 16px; font-weight: 800;"></h3>
+            <div id="detailBody"></div>
+            <div class="detail-actions" id="detailActions"></div>
+        </div>
+    </div>
+    <div id="chatModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" style="align-items:stretch;">
+        <div class="modal-content" style="max-height:95vh; display:flex; flex-direction:column; padding:0;">
+            <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;"><h3 id="chatModalTitle" style="margin:0; font-weight:800;">Чат</h3><button type="button" class="btn-icon" onclick="closeChatModal()" aria-label="Закрити"><i class="fa-solid fa-xmark"></i></button></div>
+            <div id="chatMessages" style="flex:1; overflow-y:auto; padding:16px; min-height:200px; max-height:50vh;"></div>
+            <div id="chatJoinNotice" style="display:none; padding:10px 16px; background:#fff3cd; font-size:13px;"><span>Приєднатися з оповіщенням учасникам?</span> <button type="button" class="btn" style="padding:6px 12px; margin-left:8px; width:auto" onclick="document.getElementById('chatJoinNotice').style.display='none'; _sb.from('messages').insert([{chat_id: currentChatId, sender_id: user.id, body: 'Підтримка приєдналася до чату.', is_system: true}]); loadMessages(currentChatId);">Так</button> <button type="button" class="btn-text" style="margin-left:4px" onclick="document.getElementById('chatJoinNotice').style.display='none'">Тихо</button></div>
+            <div style="padding:12px 16px; border-top:1px solid #eee;"><input type="text" id="chatInput" class="input" placeholder="Повідомлення..." style="margin-bottom:0" onkeydown="if(event.key==='Enter') sendChatMessage()"><button type="button" class="btn" style="margin-top:8px" onclick="sendChatMessage()">Надіслати</button></div>
+        </div>
+    </div>
+    <div id="editPostModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" onclick="if(event.target===this) closeEditPostModal()">
+        <div class="modal-content" onclick="event.stopPropagation()"><h3 style="margin-bottom:16px; font-weight:800;">Редагувати оголошення</h3><input type="hidden" id="editPostId"><input type="text" id="editTitle" class="input" placeholder="Заголовок"><select id="editCity" class="input" style="margin-bottom:12px;"></select><input type="tel" id="editPhone" class="input" placeholder="Телефон"><div id="editPriceWrap" style="display:none"><input type="number" id="editPrice" class="input" placeholder="Ціна (грн)"></div><textarea id="editDesc" class="input" placeholder="Опис" style="height:80px"></textarea><input type="text" id="editTg" class="input" placeholder="Telegram"><button class="btn" onclick="saveEditPost()">Зберегти</button></div>
+    </div>
+    <div id="hiddenModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="hiddenModalTitle" aria-hidden="true" onclick="if(event.target===this) document.getElementById('hiddenModal').style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="hiddenModalTitle" style="margin-bottom: 16px; font-weight: 800;">Приховані оголошення</h3>
+            <p id="hiddenModalText" style="margin-bottom: 20px; color: var(--m);"></p>
+            <button type="button" class="btn" onclick="unhideAll(); document.getElementById('hiddenModal').style.display='none'">Показати знову всі</button>
+        </div>
+    </div>
+
+    <nav class="nav" role="navigation" aria-label="Головне меню">
+        <div class="nav-item active" onclick="nav('home', this)" tabindex="0" aria-label="Головна"><i class="fa-solid fa-house"></i></div>
+        <div class="nav-item" id="navChats" style="display:none" onclick="nav('chats', this)" tabindex="0" aria-label="Чати"><i class="fa-solid fa-comments"></i></div>
+        <div class="nav-item nav-add" onclick="openAdd()" tabindex="0" aria-label="Додати оголошення"><i class="fa-solid fa-plus"></i></div>
+        <div class="nav-item" id="navAdmin" style="display:none" onclick="nav('admin', this)" tabindex="0" aria-label="Адмін"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="nav-item" onclick="nav('profile', this)" tabindex="0" aria-label="Профіль"><i class="fa-solid fa-user"></i></div>
     </nav>
 </div>
 
-<div id="addModal" class="modal" onclick="if(event.target===this) this.style.display='none'">
-    <div class="modal-content">
-        <h3 style="margin-bottom: 20px; font-weight: 800;">Нове оголошення</h3>
+<div id="addModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle" aria-hidden="true" onclick="if(event.target===this) closeAddModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="addModalTitle" style="margin-bottom: 20px; font-weight: 800;">Нове оголошення</h3>
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <select id="aIcon" class="input" style="width:80px; margin-bottom:0">
                 <option value="🐶">🐶</option>
@@ -140,6 +307,21 @@
             </select>
         </div>
         <input type="text" id="aTitle" class="input" placeholder="Заголовок (напр. Грайливий коргі)">
+        <select id="aCity" class="input" style="margin-bottom: 12px;" required aria-required="true">
+            <option value="">Оберіть місто *</option>
+            <option value="Київ">Київ</option>
+            <option value="Харків">Харків</option>
+            <option value="Одеса">Одеса</option>
+            <option value="Дніпро">Дніпро</option>
+            <option value="Львів">Львів</option>
+            <option value="Запоріжжя">Запоріжжя</option>
+            <option value="Вінниця">Вінниця</option>
+            <option value="Полтава">Полтава</option>
+            <option value="Чернігів">Чернігів</option>
+            <option value="Івано-Франківськ">Івано-Франківськ</option>
+            <option value="Інше">Інше</option>
+        </select>
+        <input type="tel" id="aPhone" class="input" placeholder="Телефон (необовʼязково)">
         <div id="pWrap" style="display:none"><input type="number" id="aPrice" class="input" placeholder="Ціна (грн)"></div>
         <textarea id="aDesc" class="input" placeholder="Опис..." style="height:100px"></textarea>
         <input type="text" id="aTg" class="input" placeholder="Telegram нік (без @)">
@@ -149,54 +331,289 @@
 
 <script>
     // --- SUPABASE CONFIG ---
+    // Таблиця profiles: id (uuid, PK, = auth.users.id), display_name text, verified boolean default false, created_at timestamptz default now()
+    // RLS: SELECT для всіх; INSERT/UPDATE для auth.uid() = id
+    // У Supabase Dashboard: Authentication -> Enable Email provider. Database -> New table profiles.
     const S_URL = 'https://phdprsqaqnkzjzfmgzxb.supabase.co';
     const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoZHByc3FhcW5remp6Zm1nenhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMTE2MTYsImV4cCI6MjA4Nzg4NzYxNn0.p0yQktJkgJH9wDWU_tlEyHvbL5x-LyPCtGt0w68x9no';
     const _sb = supabase.createClient(S_URL, S_KEY);
+    const ADMIN_EMAIL = 'flamus66@gmail.com';
+    const SUPPORT_SYSTEM_ID = '00000000-0000-0000-0000-000000000001';
 
-    let user = JSON.parse(localStorage.getItem('pet_user')) || null;
+    let user = null;
+    let userProfile = null;
+    let userRole = 'user';
+    window._profilesMap = {};
     let currentTab = 'dating';
     let currentFilter = 'all';
+    let currentCityFilter = 'all';
+    let lastLoadedData = [];
+    const CITIES = ['Київ','Харків','Одеса','Дніпро','Львів','Запоріжжя','Вінниця','Полтава','Чернігів','Івано-Франківськ','Інше'];
+
+    function getFavorites() { try { return JSON.parse(localStorage.getItem('pet_fav') || '[]'); } catch(e) { return []; } }
+    function setFavorite(id, add) { const sid = String(id); const arr = getFavorites(); const i = arr.findIndex(x => String(x) === sid); if (add && i === -1) arr.push(sid); if (!add && i !== -1) arr.splice(i, 1); localStorage.setItem('pet_fav', JSON.stringify(arr)); }
+    function getHiddenIds() { try { return JSON.parse(localStorage.getItem('pet_hidden') || '[]'); } catch(e) { return []; } }
+    function hidePost(id, e) { if (e) e.stopPropagation(); const sid = String(id); const arr = getHiddenIds(); if (!arr.some(x => String(x) === sid)) arr.push(sid); localStorage.setItem('pet_hidden', JSON.stringify(arr)); applyFiltersAndRender(); }
+    function isDark() { return document.body.classList.contains('dark'); }
+    function toggleDark() { document.body.classList.toggle('dark'); const icon = document.getElementById('darkIcon'); if (icon) { icon.classList.toggle('fa-moon', !isDark()); icon.classList.toggle('fa-sun', isDark()); } localStorage.setItem('pet_dark', isDark() ? '1' : '0'); }
+    function relativeDate(d) { if (!d) return ''; const date = new Date(d); const now = new Date(); const sec = (now - date) / 1000; if (sec < 60) return 'щойно'; if (sec < 3600) return Math.floor(sec/60) + ' хв'; if (sec < 86400) return Math.floor(sec/3600) + ' год'; if (sec < 2592000) return Math.floor(sec/86400) + ' дн'; if (sec < 31536000) return Math.floor(sec/2592000) + ' міс'; return Math.floor(sec/31536000) + ' р'; }
+    function sharePost(idOrPost, e) { if (e) e.stopPropagation(); const p = typeof idOrPost === 'object' ? idOrPost : (window._cardData && (window._cardData[idOrPost] || window._cardData[Number(idOrPost)])); if (!p) return; const url = location.href.split('?')[0]; const text = (p.title || 'Оголошення') + (p.city ? ' • ' + p.city : '') + (p.price > 0 ? ' • ' + p.price + ' ₴' : ''); if (navigator.share) { navigator.share({ title: 'PetCorner', text: text, url: url }).catch(() => copyShareText(text, url)); } else copyShareText(text, url); }
+    function copyShareText(text, url) { const full = text + '\n' + url; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(full); toast('Посилання скопійовано!'); } else alert(full); }
+    function refreshPosts() { loadPosts(); }
+    function toast(msg) { const box = document.getElementById('toastBox'); if (!box) return; const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg; box.appendChild(el); setTimeout(() => el.remove(), 2500); }
+    function vibrateSuccess() { if (navigator.vibrate) navigator.vibrate([100, 50, 100]); }
+    function resetAllFilters() { document.getElementById('searchInput').value = ''; currentCityFilter = 'all'; currentFilter = 'all'; document.querySelectorAll('#filterSection .chip').forEach((x,i) => { x.classList.toggle('active', i === 0); }); document.getElementById('sortSelect').value = 'date'; buildCityChips(); applyFiltersAndRender(); toast('Фільтри скинуто'); }
+    function toggleListView() { const grid = document.getElementById('mainGrid'); const btn = document.getElementById('viewModeBtn'); const isList = grid.classList.toggle('list-mode'); if (btn) { btn.querySelector('i').className = isList ? 'fa-solid fa-list' : 'fa-solid fa-grip'; } localStorage.setItem('pet_listview', isList ? '1' : '0'); }
+    function openDetail(p, e) { if (e) e.stopPropagation(); const data = typeof p === 'object' ? p : (window._cardData && (window._cardData[p] || window._cardData[String(p)])); if (!data) return; const modal = document.getElementById('detailModal'); document.getElementById('detailModalTitle').textContent = data.title || 'Оголошення'; const safeIcon = (i) => (i && ['🐶','🐱','🦜','🐰','📦','🐾'].includes(i)) ? i : '🐾'; const authorProf = window._profilesMap[data.author_id]; const authorVerified = authorProf && authorProf.verified; const sellerName = (authorProf && authorProf.display_name) ? esc(authorProf.display_name) : 'Продавець'; const sellerCount = lastLoadedData.filter(x => String(x.author_id) === String(data.author_id)).length; const sellerBlock = '<div class="detail-seller"><div><div class="detail-seller-name"><i class="fa-solid fa-user" style="margin-right:6px; color: var(--p);"></i>' + sellerName + (authorVerified ? ' <span class="verified-badge" style="margin-left:6px;"><i class="fa-solid fa-shield-check"></i></span>' : '') + '</div><div style="font-size:12px; color: var(--m); margin-top:4px;">Оголошень у продавця: ' + sellerCount + '</div></div><div style="font-size:13px; color: var(--m);">@' + esc(String(data.tg_username || '').trim().replace(/^@/, '') || '—') + '</div></div>'; document.getElementById('detailBody').innerHTML = sellerBlock + '<div class="detail-row">' + safeIcon(data.icon) + ' <span style="font-size:18px;">' + esc(data.title || '') + '</span></div>' + (data.city ? '<div class="detail-row"><b>Місто</b> ' + esc(data.city) + '</div>' : '') + (data.price > 0 ? '<div class="detail-row"><b>Ціна</b> ' + esc(String(data.price)) + ' ₴</div>' : '<div class="detail-row"><b>Тип</b> Знайомства</div>') + (data.description ? '<div class="detail-row"><b>Опис</b><br>' + esc(data.description).replace(/\n/g, '<br>') + '</div>' : '') + '<div class="detail-row"><b>Опубліковано</b> ' + relativeDate(data.created_at) + '</div>'; const tgUser = String(data.tg_username || '').trim().replace(/^@/, '') || 'mcz_dyxyz'; const tgUrl = 'https://t.me/' + tgUser.replace(/[^a-zA-Z0-9_]/g, ''); let actions = '<button type="button" class="btn" onclick="window.open(\'' + tgUrl + '\'); closeDetailModal();"><i class="fa-brands fa-telegram"></i> Написати в Telegram</button>'; if (data.phone) actions += '<a href="tel:' + esc(data.phone).replace(/[^0-9+]/g, '') + '" class="btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center"><i class="fa-solid fa-phone"></i> Подзвонити</a>'; if (user && String(data.author_id) !== String(user.id)) actions += '<button type="button" class="btn" onclick="openChatWithSeller(window._cardData[\'' + data.id + '\']); closeDetailModal();"><i class="fa-solid fa-comments"></i> Чат</button>'; if (user && String(data.author_id) === String(user.id)) actions += '<button type="button" class="btn" onclick="editPost(window._cardData[\'' + data.id + '\']); closeDetailModal();"><i class="fa-solid fa-pen"></i> Редагувати</button><button type="button" class="btn" style="background:#ff4757" onclick="if(confirm(\'Видалити оголошення?\')) { deletePost(window._cardData[\'' + data.id + '\']); closeDetailModal(); }"><i class="fa-solid fa-trash"></i> Видалити</button>'; actions += '<button type="button" class="btn" style="background:#555" onclick="copyTgUsername(\'' + tgUser + '\');"><i class="fa-solid fa-copy"></i> Копіювати нік</button>'; document.getElementById('detailActions').innerHTML = actions; modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); }
+    function closeDetailModal() { const modal = document.getElementById('detailModal'); if (modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); } }
+    function copyTgUsername(tg) { const text = '@' + tg; if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text); toast('@' + tg + ' скопійовано'); } else toast(text); vibrateSuccess(); }
+    function unhideAll() { localStorage.removeItem('pet_hidden'); toast('Усі приховані оголошення відновлено'); const grid = document.getElementById('mainGrid'); if (grid && grid.closest('.page.active')) applyFiltersAndRender(); renderProfile(); }
+    function openHiddenPage() { const ids = getHiddenIds(); const n = ids.length; const text = document.getElementById('hiddenModalText'); const modal = document.getElementById('hiddenModal'); if (text) text.textContent = n ? 'Ви приховали ' + n + ' оголошень. Відобразити їх знову?' : 'У вас немає прихованих оголошень.'; if (modal) { modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); } }
+    function applyFiltersAndRender() {
+        const search = (document.getElementById('searchInput') || {}).value.trim().toLowerCase();
+        const sortBy = (document.getElementById('sortSelect') || {}).value || 'date';
+        const favIds = getFavorites();
+        const hiddenIds = getHiddenIds();
+        const hid = (id) => hiddenIds.some(x => String(x) === String(id));
+        const fav = (id) => favIds.some(x => String(x) === String(id));
+        let list = lastLoadedData.filter(p => !hid(p.id));
+        if (currentFilter === 'favorites') list = list.filter(p => fav(p.id));
+        else if (currentFilter !== 'all') list = list.filter(p => (p.icon || '') === currentFilter);
+        if (currentCityFilter !== 'all') list = list.filter(p => (p.city || '') === currentCityFilter);
+        if (search) list = list.filter(p => ((p.title || '') + ' ' + (p.description || '') + ' ' + (p.city || '')).toLowerCase().includes(search));
+        if (sortBy === 'date') list.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        else if (sortBy === 'price_asc') list.sort((a,b) => (a.price || 0) - (b.price || 0));
+        else if (sortBy === 'price_desc') list.sort((a,b) => (b.price || 0) - (a.price || 0));
+        else if (sortBy === 'title') list.sort((a,b) => (a.title || '').localeCompare(b.title || ''));
+        renderCards(list);
+        const countEl = document.getElementById('listCount'); if (countEl) countEl.textContent = list.length ? 'Показано ' + list.length + (lastLoadedData.length !== list.length ? ' з ' + lastLoadedData.length : '') + ' оголошень' : '';
+    }
+    function buildCityChips() {
+        const cities = [...new Set(lastLoadedData.map(p => p.city).filter(Boolean))].sort();
+        const wrap = document.getElementById('cityChips'); if (!wrap) return;
+        wrap.style.display = cities.length ? 'flex' : 'none';
+        wrap.innerHTML = '<div class="chip' + (currentCityFilter === 'all' ? ' active' : '') + '" onclick="setCityFilter(\'all\', this)" tabindex="0">Всі міста</div>' + cities.map(c => '<div class="chip' + (currentCityFilter === c ? ' active' : '') + '" onclick="setCityFilter(\'' + esc(c).replace(/'/g, '\\\'') + '\', this)" tabindex="0">' + esc(c) + '</div>').join('');
+    }
+    function setCityFilter(city, el) { currentCityFilter = city; document.querySelectorAll('#cityChips .chip').forEach(x => x.classList.remove('active')); if (el) el.classList.add('active'); applyFiltersAndRender(); }
+    function isNewPost(p) { if (!p || !p.created_at) return false; const age = Date.now() - new Date(p.created_at).getTime(); return age < 24 * 60 * 60 * 1000; }
+    async function loadMyListings() {
+        if (!user) return [];
+        const { data } = await _sb.from('posts').select('*').eq('author_id', user.id).order('created_at', { ascending: false });
+        return data || [];
+    }
+
+    async function initAuth() {
+        const { data: { session } } = await _sb.auth.getSession();
+        if (!session) { renderProfile(); updateNavForAuth(); return; }
+        user = { id: session.user.id, email: session.user.email || '' };
+        const { data: prof } = await _sb.from('profiles').select('display_name, verified, created_at, role').eq('id', user.id).single();
+        userProfile = prof || { display_name: user.email.split('@')[0] || 'Користувач', verified: false, created_at: new Date().toISOString(), role: 'user' };
+        user.name = userProfile.display_name || user.email.split('@')[0] || 'Користувач';
+        userRole = (user.email === ADMIN_EMAIL ? 'admin' : (userProfile.role || 'user'));
+        renderProfile();
+        updateNavForAuth();
+    }
+    async function loginAuth() {
+        const email = (document.getElementById('loginEmail') || {}).value.trim();
+        const password = (document.getElementById('loginPassword') || {}).value;
+        const msg = document.getElementById('authMsg');
+        if (!email || !password) { if (msg) msg.textContent = 'Введіть email та пароль'; return; }
+        if (msg) msg.textContent = 'Вхід...';
+        const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+        if (error) { if (msg) msg.textContent = error.message || 'Помилка входу'; return; }
+        user = { id: data.user.id, email: data.user.email || '' };
+        const { data: prof } = await _sb.from('profiles').select('display_name, verified, created_at, role').eq('id', user.id).single();
+        userProfile = prof || {}; user.name = userProfile.display_name || user.email.split('@')[0] || 'Користувач';
+        userRole = (user.email === ADMIN_EMAIL ? 'admin' : (userProfile.role || 'user'));
+        toast('Вітаємо!'); renderProfile(); updateNavForAuth();
+    }
+    async function registerAuth() {
+        const name = (document.getElementById('regName') || {}).value.trim();
+        const email = (document.getElementById('regEmail') || {}).value.trim();
+        const password = (document.getElementById('regPassword') || {}).value;
+        const msg = document.getElementById('authMsg');
+        if (!name || name.length < 2) { if (msg) msg.textContent = 'Введіть ім\'я (мін. 2 символи)'; return; }
+        if (!email || !password) { if (msg) msg.textContent = 'Введіть email та пароль'; return; }
+        if (password.length < 6) { if (msg) msg.textContent = 'Пароль мін. 6 символів'; return; }
+        if (msg) msg.textContent = 'Реєстрація...';
+        const { data, error } = await _sb.auth.signUp({ email, password, options: { data: { display_name: name } } });
+        if (error) { if (msg) msg.textContent = error.message || 'Помилка реєстрації'; return; }
+        await _sb.from('profiles').upsert({ id: data.user.id, display_name: name, verified: false }, { onConflict: 'id' });
+        if (data.session) {
+            user = { id: data.user.id, email: data.user.email || '', name }; userProfile = { display_name: name, verified: false, created_at: new Date().toISOString() };
+            toast('Вітаємо!'); renderProfile();
+        } else {
+            if (msg) msg.textContent = ''; toast('Перевірте email для підтвердження'); showAuthScreen('login');
+        }
+    }
+    function logoutAuth() { _sb.auth.signOut(); user = null; userProfile = null; toast('Ви вийшли'); renderProfile(); }
+    function updateNavForAuth() {
+        const navChats = document.getElementById('navChats'); const supportBtn = document.getElementById('headerSupportBtn'); const navAdmin = document.getElementById('navAdmin');
+        if (navChats) navChats.style.display = user ? 'flex' : 'none';
+        if (supportBtn) supportBtn.style.display = user ? 'flex' : 'none';
+        if (navAdmin) navAdmin.style.display = (user && userRole === 'admin') ? 'flex' : 'none';
+    }
+    let currentChatId = null; let currentChatPartnerName = ''; let currentChatIsSupport = false; let chatPollTimer = null;
+    async function openSupportChat() { if (!user) { nav('profile', document.querySelectorAll('.nav-item')[3]); return; } const { data: existing } = await _sb.from('chats').select('id').eq('user1_id', user.id).eq('user2_id', SUPPORT_SYSTEM_ID).maybeSingle(); let chatId = existing && existing.id; if (!chatId) { const { data: created } = await _sb.from('chats').insert([{ user1_id: user.id, user2_id: SUPPORT_SYSTEM_ID }]).select('id').single(); chatId = created && created.id; } if (chatId) { currentChatIsSupport = true; currentChatPartnerName = 'Підтримка'; openChatById(chatId); } }
+    async function openChatWithSeller(post) { if (!user) { nav('profile', document.querySelectorAll('.nav-item')[3]); return; } const sellerId = post.author_id; if (!sellerId || String(sellerId).length < 30) { toast('Чат доступний лише з зареєстрованими продавцями'); return; } if (sellerId === user.id) { toast('Це ваше оголошення'); return; } let chatId = null; const { data: d1 } = await _sb.from('chats').select('id').eq('user1_id', user.id).eq('user2_id', sellerId).eq('post_id', post.id || null).maybeSingle(); if (d1 && d1.id) chatId = d1.id; if (!chatId) { const { data: d2 } = await _sb.from('chats').select('id').eq('user1_id', sellerId).eq('user2_id', user.id).eq('post_id', post.id || null).maybeSingle(); if (d2 && d2.id) chatId = d2.id; } if (!chatId) { const { data: created } = await _sb.from('chats').insert([{ user1_id: user.id, user2_id: sellerId, post_id: post.id || null }]).select('id').single(); chatId = created && created.id; } if (chatId) { currentChatIsSupport = false; currentChatPartnerName = (window._profilesMap[sellerId] && window._profilesMap[sellerId].display_name) || 'Продавець'; openChatById(chatId); closeDetailModal(); } }
+    async function loadMyChats() { if (!user) return; const { data } = await _sb.from('chats').select('id, user1_id, user2_id, post_id, created_at').or('user1_id.eq.' + user.id + ',user2_id.eq.' + user.id).order('created_at', { ascending: false }); const list = document.getElementById('chatsList'); if (!list) return; if (!data || !data.length) { list.innerHTML = '<p style="color:var(--m); padding:20px; text-align:center;">Немає чатів. Натисніть «Чат» в оголошенні або «Підтримка» в шапці.</p>'; return; } const otherIds = data.map(c => c.user1_id === user.id ? c.user2_id : c.user1_id).filter(Boolean); await fetchProfilesForAuthors(otherIds); list.innerHTML = data.map(c => { const otherId = c.user1_id === user.id ? c.user2_id : c.user1_id; const name = otherId === SUPPORT_SYSTEM_ID ? 'Підтримка' : (window._profilesMap[otherId] && window._profilesMap[otherId].display_name) || 'Користувач'; return '<div class="chat-item" onclick="openChatById(\'' + c.id + '\', false, \'' + String(esc(name)).replace(/'/g, "\\'") + '\')"><div><div class="name">' + esc(name) + '</div><div class="meta">Чат</div></div><i class="fa-solid fa-chevron-right" style="color:var(--m)"></i></div>'; }).join(''); }
+    async function loadAllChats() { const { data } = await _sb.from('chats').select('id, user1_id, user2_id, created_at').order('created_at', { ascending: false }); const list = document.getElementById('chatsAllList'); if (!list) return; if (!data || !data.length) { list.innerHTML = '<p style="color:var(--m); padding:20px;">Немає чатів</p>'; return; } const userIds = [...new Set(data.flatMap(c => [c.user1_id, c.user2_id]).filter(x => x && x !== SUPPORT_SYSTEM_ID))]; await fetchProfilesForAuthors(userIds); list.innerHTML = data.map(c => { const custId = c.user2_id === SUPPORT_SYSTEM_ID ? c.user1_id : (c.user1_id === SUPPORT_SYSTEM_ID ? c.user2_id : c.user1_id); const name = (window._profilesMap[custId] && window._profilesMap[custId].display_name) || custId; const label = c.user2_id === SUPPORT_SYSTEM_ID ? 'Підтримка' : 'Чат'; return '<div class="chat-item" onclick="openChatById(\'' + c.id + '\', false, \'' + String(esc(name)).replace(/'/g, "\\'") + '\', true)"><div><div class="name">' + esc(name) + '</div><div class="meta">' + label + '</div></div><i class="fa-solid fa-chevron-right"></i></div>'; }).join(''); }
+    function openChatById(chatId, withNotify, partnerName, fromAllList) { if (partnerName) currentChatPartnerName = partnerName; currentChatId = chatId; document.getElementById('chatModalTitle').textContent = currentChatPartnerName || 'Чат'; document.getElementById('chatModal').style.display = 'flex'; document.getElementById('chatModal').setAttribute('aria-hidden', 'false'); const joinNotice = document.getElementById('chatJoinNotice'); const showJoinNotice = (userRole === 'admin' || userRole === 'support') && (fromAllList || withNotify === true); if (showJoinNotice && withNotify === true) { _sb.from('messages').insert([{ chat_id: chatId, sender_id: user.id, body: 'Підтримка приєдналася до чату.', is_system: true }]); joinNotice.style.display = 'none'; } else if (showJoinNotice && fromAllList) joinNotice.style.display = 'block'; else joinNotice.style.display = 'none'; loadMessages(chatId); if (chatPollTimer) clearInterval(chatPollTimer); chatPollTimer = setInterval(() => loadMessages(chatId), 3000); }
+    async function loadMessages(chatId) { if (!chatId) return; const { data: msgs } = await _sb.from('messages').select('id, sender_id, body, is_system, created_at').eq('chat_id', chatId).order('created_at', { ascending: true }); const box = document.getElementById('chatMessages'); if (!box) return; if (!msgs || !msgs.length) { box.innerHTML = '<p style="color:var(--m); text-align:center;">Немає повідомлень</p>'; return; } box.innerHTML = msgs.map(m => { const isMe = m.sender_id === user.id; const cls = m.is_system ? 'system' : (isMe ? 'me' : 'other'); const who = m.is_system ? '' : (isMe ? 'Ви' : currentChatPartnerName); return '<div class="msg-bubble ' + cls + '">' + (who ? '<div style="font-size:10px; opacity:0.8; margin-bottom:4px">' + esc(who) + '</div>' : '') + esc(m.body) + '<div style="font-size:10px; margin-top:4px">' + relativeDate(m.created_at) + '</div></div>'; }).join(''); box.scrollTop = box.scrollHeight; }
+    async function sendChatMessage() { const input = document.getElementById('chatInput'); const body = (input && input.value || '').trim(); if (!body || !currentChatId) return; await _sb.from('messages').insert([{ chat_id: currentChatId, sender_id: user.id, body: body, is_system: false }]); input.value = ''; loadMessages(currentChatId); }
+    function closeChatModal() { currentChatId = null; if (chatPollTimer) clearInterval(chatPollTimer); document.getElementById('chatModal').style.display = 'none'; document.getElementById('chatModal').setAttribute('aria-hidden', 'true'); }
+    function editPost(p) { if (!p || !user || String(p.author_id) !== String(user.id)) return; document.getElementById('editPostId').value = p.id; document.getElementById('editTitle').value = p.title || ''; document.getElementById('editCity').innerHTML = CITIES.map(c => '<option value="' + c + '"' + (c === (p.city || '') ? ' selected' : '') + '>' + c + '</option>').join(''); document.getElementById('editPhone').value = p.phone || ''; document.getElementById('editPrice').value = p.price || ''; document.getElementById('editPriceWrap').style.display = p.type === 'bazar' ? 'block' : 'none'; document.getElementById('editDesc').value = p.description || ''; document.getElementById('editTg').value = (p.tg_username || '').replace(/^@/, ''); document.getElementById('editPostModal').style.display = 'flex'; document.getElementById('editPostModal').setAttribute('aria-hidden', 'false'); }
+    async function saveEditPost() { const id = document.getElementById('editPostId').value; if (!id || !user) return; const upd = { title: document.getElementById('editTitle').value.trim(), city: document.getElementById('editCity').value, phone: document.getElementById('editPhone').value.trim() || null, price: parseInt(document.getElementById('editPrice').value) || 0, description: document.getElementById('editDesc').value, tg_username: document.getElementById('editTg').value.trim().replace(/^@/, '') }; const { error } = await _sb.from('posts').update(upd).eq('id', id).eq('author_id', user.id); if (error) { toast('Помилка'); return; } toast('Збережено'); closeEditPostModal(); loadPosts(); if (document.getElementById('profilePage').classList.contains('active')) loadMyListings().then(myListingsRender); }
+    function closeEditPostModal() { document.getElementById('editPostModal').style.display = 'none'; document.getElementById('editPostModal').setAttribute('aria-hidden', 'true'); }
+    async function deletePost(p) { if (!p || !user) return; const { error } = await _sb.from('posts').delete().eq('id', p.id).eq('author_id', user.id); if (error) { toast('Помилка видалення'); return; } toast('Видалено'); closeDetailModal(); loadPosts(); if (document.getElementById('profilePage').classList.contains('active')) loadMyListings().then(myListingsRender); }
+    async function adminLoadUserCount() { const { count } = await _sb.from('profiles').select('*', { count: 'exact', head: true }); const el = document.getElementById('adminUserCount'); if (el) el.textContent = 'Користувачів: ' + (count || 0); }
+    async function adminLoadPosts() { const { data } = await _sb.from('posts').select('*').order('created_at', { ascending: false }); const list = document.getElementById('adminPostsList'); if (!list) return; if (!data || !data.length) { list.innerHTML = '<p style="color:var(--m);">Немає оголошень</p>'; return; } list.innerHTML = data.map(p => '<div class="admin-post-row"><div><div class="title">' + esc(p.title || '') + '</div><div style="font-size:12px; color:var(--m)">' + (p.city || '') + ' · ' + relativeDate(p.created_at) + '</div></div><button type="button" class="btn" style="background:#ff4757" onclick="adminDeletePost(\'' + p.id + '\')">Видалити</button></div>').join(''); }
+    async function adminDeletePost(id) { if (!confirm('Видалити це оголошення?')) return; const { error } = await _sb.from('posts').delete().eq('id', id); if (error) toast('Помилка'); else { toast('Видалено'); adminLoadPosts(); } }
+    function showAuthScreen(mode) {
+        const area = document.getElementById('authArea'); if (!area) return;
+        if (mode === 'login') area.innerHTML = `
+            <div class="auth-form">
+                <h2 style="margin-bottom:8px;">Увійти</h2>
+                <p style="color:var(--m); font-size:14px; margin-bottom:20px;">Увійдіть, щоб публікувати оголошення</p>
+                <input type="email" id="loginEmail" class="input" placeholder="Email" autocomplete="email">
+                <input type="password" id="loginPassword" class="input" placeholder="Пароль" autocomplete="current-password">
+                <p id="authMsg" class="auth-msg"></p>
+                <button class="btn" onclick="loginAuth()">Увійти</button>
+                <a class="auth-link" onclick="showAuthScreen('register')">Немає акаунту? Зареєструватися</a>
+            </div>`;
+        else area.innerHTML = `
+            <div class="auth-form">
+                <h2 style="margin-bottom:8px;">Реєстрація</h2>
+                <p style="color:var(--m); font-size:14px; margin-bottom:20px;">Створіть акаунт за кілька секунд</p>
+                <input type="text" id="regName" class="input" placeholder="Імʼя (як показуватиметься)" autocomplete="name">
+                <input type="email" id="regEmail" class="input" placeholder="Email" autocomplete="email">
+                <input type="password" id="regPassword" class="input" placeholder="Пароль (мін. 6 символів)" autocomplete="new-password">
+                <p id="authMsg" class="auth-msg"></p>
+                <button class="btn" onclick="registerAuth()">Зареєструватися</button>
+                <a class="auth-link" onclick="showAuthScreen('login')">Вже є акаунт? Увійти</a>
+            </div>`;
+    }
+    async function fetchProfilesForAuthors(authorIds) {
+        const uuidLike = id => id && String(id).length >= 30 && !String(id).startsWith('u_');
+        const ids = [...new Set((authorIds || []).filter(uuidLike))];
+        if (!ids.length) return;
+        const { data } = await _sb.from('profiles').select('id, display_name, verified').in('id', ids);
+        if (data) data.forEach(p => { window._profilesMap[p.id] = p; });
+    }
+    function formatMemberSince(d) {
+        if (!d) return '';
+        const date = new Date(d);
+        const months = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
+        return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+    }
+
+    function esc(s) {
+        if (s == null || s === '') return '';
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
 
     window.addEventListener('load', () => {
+        if (localStorage.getItem('pet_dark') === '1') { document.body.classList.add('dark'); const icon = document.getElementById('darkIcon'); if (icon) { icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); } }
+        if (localStorage.getItem('pet_listview') === '1') { const grid = document.getElementById('mainGrid'); const btn = document.getElementById('viewModeBtn'); if (grid) grid.classList.add('list-mode'); if (btn && btn.querySelector('i')) btn.querySelector('i').className = 'fa-solid fa-list'; }
         setTimeout(() => {
-            document.getElementById('loading-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+            const ls = document.getElementById('loading-screen');
+            ls.style.opacity = '0';
+            setTimeout(() => { ls.style.display = 'none'; ls.setAttribute('aria-hidden', 'true'); }, 500);
         }, 1200);
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const chat = document.getElementById('chatModal'); if (chat && chat.style.display === 'flex') { closeChatModal(); return; }
+            const editM = document.getElementById('editPostModal'); if (editM && editM.style.display === 'flex') { closeEditPostModal(); return; }
+            const detail = document.getElementById('detailModal'); if (detail && detail.style.display === 'flex') { closeDetailModal(); return; }
+            const hidden = document.getElementById('hiddenModal'); if (hidden && hidden.style.display === 'flex') { hidden.style.display = 'none'; return; }
+            const modal = document.getElementById('addModal'); if (modal && modal.style.display === 'flex') closeAddModal();
+        }
     });
 
     async function loadPosts() {
         const grid = document.getElementById('mainGrid');
+        grid.setAttribute('aria-busy', 'true');
         grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
-        
         let query = _sb.from('posts').select('*').eq('type', currentTab).order('created_at', { ascending: false });
-        
-        if(currentFilter !== 'all') {
-            query = query.eq('icon', currentFilter);
-        }
-
+        if (currentFilter !== 'all' && currentFilter !== 'favorites') query = query.eq('icon', currentFilter);
         const { data, error } = await query;
+        grid.setAttribute('aria-busy', 'false');
+        if (error) {
+            console.error(error);
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--m);">Помилка завантаження. Спробуйте пізніше 🐾</p>';
+            return;
+        }
+        const prevCount = Number(localStorage.getItem('pet_post_count') || 0);
+        lastLoadedData = data || [];
+        localStorage.setItem('pet_post_count', String(lastLoadedData.length));
+        if (prevCount > 0 && lastLoadedData.length > prevCount) toast('З\'явилося нових оголошень: +' + (lastLoadedData.length - prevCount));
+        fetchProfilesForAuthors(lastLoadedData.map(p => p.author_id));
+        buildCityChips();
+        applyFiltersAndRender();
+    }
 
-        if (error) return console.error(error);
-        
-        grid.innerHTML = data.length ? '' : '<p style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--m);">Нікого не знайдено 🐾</p>';
-        data.forEach(p => {
-            grid.innerHTML += `
-                <div class="card animate__animated animate__zoomIn" onclick="window.open('https://t.me/${p.tg_username}')">
-                    <div class="card-img">${p.icon || '🐾'}</div>
-                    <div class="card-body">
-                        <div style="font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.title}</div>
-                        <div class="card-price">${p.price > 0 ? p.price + ' ₴' : 'Dating'}</div>
-                    </div>
+    function renderCards(list) {
+        const grid = document.getElementById('mainGrid');
+        const favIds = getFavorites();
+        const isFav = (id) => favIds.some(x => String(x) === String(id));
+        const safeIcon = (i) => (i && ['🐶','🐱','🦜','🐰','📦','🐾'].includes(i)) ? i : '🐾';
+        if (!list.length) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px; color: var(--m);">' + (currentFilter === 'favorites' ? 'Нічого в обраному 🐾' : 'Нікого не знайдено 🐾') + '</p>';
+            return;
+        }
+        grid.innerHTML = '';
+        list.forEach(p => {
+            const tgRaw = String(p.tg_username || '').trim().replace(/^@/, '') || 'mcz_dyxyz';
+            const tgUrl = 'https://t.me/' + tgRaw.replace(/[^a-zA-Z0-9_]/g, '');
+            const title = esc(p.title || '');
+            const city = esc(p.city || '');
+            const favActive = isFav(p.id);
+            const sellerName = (window._profilesMap[p.author_id] && window._profilesMap[p.author_id].display_name) ? esc(window._profilesMap[p.author_id].display_name) : '';
+            const tgNick = (p.tg_username && String(p.tg_username).trim()) ? '@' + esc(String(p.tg_username).trim().replace(/^@/, '')) : '';
+            const sellerLine = sellerName ? '<div class="card-seller"><i class="fa-solid fa-user"></i> ' + sellerName + '</div>' : (tgNick ? '<div class="card-seller"><i class="fa-brands fa-telegram"></i> ' + tgNick + '</div>' : '');
+            const card = document.createElement('div');
+            card.className = 'card animate__animated animate__zoomIn';
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', title + ' ' + (p.price > 0 ? p.price + ' гривень' : 'Знайомства'));
+            card.innerHTML = `
+                <div class="card-actions">
+                    <button type="button" class="card-action-btn fav ${favActive ? 'fav-active' : ''}" onclick="toggleFav('${p.id}', event)" aria-label="${favActive ? 'Прибрати з обраного' : 'В обране'}"><i class="fa-${favActive ? 'solid' : 'regular'} fa-heart"></i></button>
+                    <button type="button" class="card-action-btn" onclick="sharePost('${p.id}', event)" aria-label="Поділитися"><i class="fa-solid fa-share-nodes"></i></button>
+                    <button type="button" class="card-action-btn" onclick="hidePost('${p.id}', event)" aria-label="Приховати"><i class="fa-solid fa-eye-slash"></i></button>
+                </div>
+                ${isNewPost(p) ? '<span class="badge-new">Нове</span>' : ''}
+                ${(window._profilesMap[p.author_id] && window._profilesMap[p.author_id].verified) ? '<span class="card-verified verified-badge"><i class="fa-solid fa-shield-check"></i></span>' : ''}
+                <div class="card-img">${safeIcon(p.icon)}</div>
+                <div class="card-body">
+                    <div style="font-weight:700; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${title}</div>
+                    ${sellerLine}
+                    <div class="card-price">${p.price > 0 ? esc(String(p.price)) + ' ₴' : 'Dating'}</div>
+                    ${city ? '<div class="card-city"><i class="fa-solid fa-location-dot"></i> ' + city + '</div>' : ''}
+                    <div class="card-date">${relativeDate(p.created_at)}</div>
                 </div>`;
+            card.onclick = (e) => { if (!e.target.closest('.card-action-btn')) openDetail(p, e); };
+            card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p); } };
+            grid.appendChild(card);
+            if (!window._cardData) window._cardData = {};
+            window._cardData[p.id] = window._cardData[String(p.id)] = p;
         });
     }
+
+    function toggleFav(id, e) { if (e) e.stopPropagation(); const favs = getFavorites(); const add = !favs.some(x => String(x) === String(id)); setFavorite(id, add); applyFiltersAndRender(); }
 
     async function publish() {
         const btn = document.getElementById('btnPublish');
         const title = document.getElementById('aTitle').value.trim();
         const tg = document.getElementById('aTg').value.trim().replace('@', '');
         
-        if(!title || !tg) return alert('Введіть назву та Telegram!');
+        const city = (document.getElementById('aCity') || {}).value || '';
+        if (!title || !tg) return alert('Введіть назву та Telegram!');
+        if (!city) return alert('Оберіть місто!');
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Завантаження...';
@@ -208,7 +625,9 @@
             price: parseInt(document.getElementById('aPrice').value) || 0,
             tg_username: tg,
             icon: document.getElementById('aIcon').value,
-            author_id: user.id
+            author_id: user.id,
+            city: city,
+            phone: (document.getElementById('aPhone') || {}).value.trim() || null
         };
 
         const { error } = await _sb.from('posts').insert([post]);
@@ -218,72 +637,107 @@
 
         if(error) alert('Помилка! Перевір базу.');
         else {
-            document.getElementById('addModal').style.display = 'none';
+            localStorage.setItem('pet_last_city', city);
+            vibrateSuccess();
+            toast('Оголошення опубліковано!');
+            closeAddModal();
             loadPosts();
         }
+    }
+
+    function closeAddModal() {
+        const modal = document.getElementById('addModal');
+        if (!modal) return;
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
     }
 
     function renderProfile() {
         const area = document.getElementById('authArea');
         if(!user) {
-            area.innerHTML = `
-                <div style="text-align:center; padding: 40px 0;">
-                    <div style="font-size: 60px; color: #f1f1f1; margin-bottom: 20px;"><i class="fa-solid fa-user-lock"></i></div>
-                    <h2 style="margin-bottom:10px;">Твій профіль</h2>
-                    <p style="color:var(--m); margin-bottom:30px; font-size: 14px;">Увійдіть, щоб публікувати оголошення</p>
-                    <input id="uName" class="input" placeholder="Нікнейм">
-                    <button class="btn" onclick="register()">Вхiд</button>
-                </div>`;
-        } else {
-            area.innerHTML = `
+            showAuthScreen('login');
+            return;
+        }
+        const safeName = esc(user.name || '');
+        const initial = safeName ? safeName[0].toUpperCase() : '?';
+        const verified = userProfile && userProfile.verified;
+        const memberSince = userProfile && userProfile.created_at ? formatMemberSince(userProfile.created_at) : '';
+        const listingsCount = 0;
+        loadMyListings().then(list => {
+            const count = (list || []).length;
+            const statEl = document.getElementById('profileListingsCount'); if (statEl) statEl.textContent = count;
+        });
+        area.innerHTML = `
                 <div class="profile-header animate__animated animate__fadeIn">
-                    <div class="profile-avatar">${user.name[0]}</div>
-                    <h2 style="font-weight:800;">${user.name}</h2>
-                    <p style="font-size: 11px; opacity: 0.7; letter-spacing:1px;">PET-ID: ${user.id.substring(0,8).toUpperCase()}</p>
+                    <div class="profile-avatar">${initial}</div>
+                    <h2 style="font-weight:800;">${safeName}${verified ? ' <span class="verified-badge"><i class="fa-solid fa-shield-check"></i> Перевірений</span>' : ''}</h2>
+                    ${memberSince ? '<p class="member-since">На сайті з ' + esc(memberSince) + '</p>' : ''}
+                    <p style="font-size: 11px; opacity: 0.7; letter-spacing:1px;">${(user.email || '').replace(/(.{2}).*(@.*)/, '$1***$2') || ('ID: ' + user.id.substring(0,8).toUpperCase())}</p>
                     <div class="profile-stats">
-                        <div class="stat-box"><b>LIVE</b><span>Статус</span></div>
+                        <div class="stat-box"><b id="profileListingsCount">0</b><span>Оголошень</span></div>
+                        <div class="stat-box"><b>${verified ? 'Так' : 'Ні'}</b><span>Верифікація</span></div>
                         <div class="stat-box"><b>UA</b><span>Регіон</span></div>
-                        <div class="stat-box"><b>Standart</b><span>План</span></div>
                     </div>
                 </div>
                 <div class="menu-list">
-                    <div class="menu-item"><i class="fa-solid fa-headset"></i> <a href="https://t.me/mcz_dyxyz" target="_blank" style="color: inherit; text-decoration: none;">Служба підтримки</a> </div>
+                    <div class="menu-item" onclick="nav('home', document.querySelector('.nav-item')); setFilter('all', document.querySelector('#filterSection .chip')); loadPosts();"><i class="fa-solid fa-grid-2"></i> Всі оголошення</div>
+                    <div class="menu-item" onclick="nav('chats', document.getElementById('navChats'));"><i class="fa-solid fa-comments"></i> Мої чати</div>
+                    ${(userRole === 'admin' || userRole === 'support') ? '<div class="menu-item" onclick="nav(\'chats\', document.getElementById(\'navChats\')); document.getElementById(\'chatsListWrap\').style.display=\'none\'; document.getElementById(\'chatsAllWrap\').style.display=\'block\'; loadAllChats();"><i class="fa-solid fa-headset"></i> Усі чати (підтримка)</div>' : ''}
+                    ${userRole === 'admin' ? '<div class="menu-item" onclick="nav(\'admin\', document.getElementById(\'navAdmin\'));"><i class="fa-solid fa-shield-halved"></i> Адмін-панель</div>' : ''}
+                    <div class="menu-item" onclick="openHiddenPage()"><i class="fa-solid fa-eye-slash"></i> Приховані оголошення</div>
+                    <div class="menu-item"><i class="fa-solid fa-headset"></i> <a href="https://t.me/mcz_dyxyz" target="_blank" style="color: inherit; text-decoration: none;">Telegram підтримки</a></div>
                     <div class="menu-item" style="color: #ff4757" onclick="logout()"><i class="fa-solid fa-power-off"></i> Вийти</div>
-                </div>`;
+                </div>
+                <div style="margin-top: 20px;"><h3 style="font-size: 16px; margin-bottom: 12px; color: var(--txt);">Мої оголошення</h3><div id="myListingsArea">Завантаження...</div></div>`;
+            loadMyListings().then(myListingsRender);
         }
+    
+
+    function myListingsRender(list) {
+        const area = document.getElementById('myListingsArea');
+        if (!area) return;
+        if (!list || !list.length) { area.innerHTML = '<p style="color: var(--m); font-size: 14px;">У вас ще немає оголошень.</p>'; return; }
+        const safeIcon = (i) => (i && ['🐶','🐱','🦜','🐰','📦','🐾'].includes(i)) ? i : '🐾';
+        list.forEach(p => { if (!window._cardData) window._cardData = {}; window._cardData[p.id] = window._cardData[String(p.id)] = p; });
+        area.innerHTML = '<div class="grid" style="margin-top:0">' + list.map(p => {
+            const title = esc(p.title || '');
+            const city = esc(p.city || '');
+            const pid = esc(String(p.id));
+            return '<div class="card" style="cursor:default; position:relative"><div class="card-img">' + safeIcon(p.icon) + '</div><div class="card-body"><div style="font-weight:700; font-size:13px;">' + title + '</div><div class="card-price">' + (p.price > 0 ? esc(String(p.price)) + ' ₴' : 'Dating') + '</div>' + (city ? '<div class="card-city"><i class="fa-solid fa-location-dot"></i> ' + city + '</div>' : '') + '<div style="margin-top:8px; display:flex; gap:8px"><button type="button" class="btn" style="padding:8px 12px; font-size:12px; width:auto" onclick="event.stopPropagation(); editPost(window._cardData[\'' + pid + '\'])">Редагувати</button><button type="button" class="btn" style="padding:8px 12px; font-size:12px; width:auto; background:#ff4757" onclick="event.stopPropagation(); if(confirm(\'Видалити?\')) deletePost(window._cardData[\'' + pid + '\'])">Видалити</button></div></div></div>';
+        }).join('') + '</div>';
     }
 
-    function register() {
-        const n = document.getElementById('uName').value;
-        if(n.length < 2) return alert('Ім\'я занадто коротке!');
-        user = { name: n, id: 'u_' + Math.random().toString(36).substr(2, 9) };
-        localStorage.setItem('pet_user', JSON.stringify(user));
-        renderProfile();
-    }
-
-    function logout() { if(confirm('Вийти з профілю?')) { user = null; localStorage.removeItem('pet_user'); renderProfile(); } }
+    function logout() { if(confirm('Вийти з профілю?')) logoutAuth(); }
 
     function setTab(t, el) {
         currentTab = t;
-        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-selected', 'false'); });
         el.classList.add('active');
+        el.setAttribute('aria-selected', 'true');
         loadPosts();
     }
 
     function setFilter(f, el) {
         currentFilter = f;
-        document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-        el.classList.add('active');
-        loadPosts();
+        document.querySelectorAll('#filterSection .chip').forEach(x => x.classList.remove('active'));
+        if (el) el.classList.add('active');
+        if (f === 'favorites') applyFiltersAndRender();
+        else loadPosts();
     }
 
     function nav(p, el) {
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(page => { page.classList.remove('active'); page.setAttribute('aria-hidden', 'true'); });
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.getElementById(p + 'Page').classList.add('active');
-        el.classList.add('active');
-        document.getElementById('mainHeader').style.display = p === 'home' ? 'block' : 'none';
+        document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+        const pageEl = document.getElementById(p + 'Page'); if (pageEl) { pageEl.classList.add('active'); pageEl.setAttribute('aria-hidden', 'false'); }
+        if (el) el.classList.add('active');
+        document.getElementById('mainHeader').style.display = (p === 'home' || p === 'chats') ? 'block' : 'none';
         document.getElementById('filterSection').style.display = p === 'home' ? 'flex' : 'none';
+        const toolbar = document.querySelector('.toolbar'); if (toolbar) toolbar.style.display = p === 'home' ? 'flex' : 'none';
+        const listCount = document.getElementById('listCount'); if (listCount) listCount.style.display = p === 'home' ? 'block' : 'none';
+        const cityChipsWrap = document.getElementById('cityChips'); if (cityChipsWrap) cityChipsWrap.style.display = p === 'home' && lastLoadedData.some(x => x.city) ? 'flex' : 'none';
+        if (p === 'chats') { document.getElementById('chatsListWrap').style.display = (userRole === 'support' || userRole === 'admin') ? 'none' : 'block'; document.getElementById('chatsAllWrap').style.display = (userRole === 'support' || userRole === 'admin') ? 'block' : 'none'; loadMyChats(); if (userRole === 'support' || userRole === 'admin') loadAllChats(); }
+        if (p === 'admin' && userRole === 'admin') { adminLoadUserCount(); adminLoadPosts(); }
     }
 
     function openAdd() {
@@ -291,12 +745,15 @@
             alert('Спершу створіть профіль!');
             nav('profile', document.querySelectorAll('.nav-item')[2]);
         } else {
-            document.getElementById('addModal').style.display = 'flex';
+            const lastCity = localStorage.getItem('pet_last_city');
+            if (lastCity) { const sel = document.getElementById('aCity'); if (sel) sel.value = lastCity; }
+            const modal = document.getElementById('addModal');
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
         }
     }
 
-    renderProfile();
-    loadPosts();
+    initAuth().then(() => loadPosts());
 </script>
 </body>
 </html>
